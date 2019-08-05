@@ -52,6 +52,8 @@ func LogAttendance(byuID string) error {
 		return err
 	}
 
+	log.L.Debugf("Successfully logged attendence with the lab API! Response: %s", res.Body)
+
 	// Successful call
 	return nil
 

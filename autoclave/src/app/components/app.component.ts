@@ -22,8 +22,7 @@ export class AppComponent {
             this.dialog.open(SuccessDialogComponent, {
               width: "75vw",
               data: {
-                msg:
-                  data.data + " (" + data.user + ") successfully checked in1!"
+                msg: data.data + " (" + data.user + ") successfully checked in!"
               }
             });
           }
