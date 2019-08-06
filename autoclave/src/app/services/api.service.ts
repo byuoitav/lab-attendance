@@ -1,5 +1,11 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { map } from "rxjs/operators";
+import { Observable } from "rxjs";
+
+interface Config {
+  lab_name: string;
+}
 
 @Injectable({
   providedIn: "root"
@@ -20,4 +26,12 @@ export class APIService {
         error => console.log(error)
       );
   };
+
+  getLabName(): Observable<string> {
+    const endpoint = "http://" + window.location.host + "/api/v1/config";
+
+    return this.http
+      .get<Config>(endpoint, {})
+      .pipe(map(response => response.lab_name));
+  }
 }

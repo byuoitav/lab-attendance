@@ -9,6 +9,7 @@ import { APIService } from "../../services/api.service";
 })
 export class LoginComponent {
   id = "";
+  labName = "";
   ssCounter = 0;
   ssTimeoutMax = 30;
   ssTimer: any;
@@ -24,6 +25,7 @@ export class LoginComponent {
         this.router.navigate(["/screensaver"]);
       }
     }, 1000);
+    api.getLabName().subscribe((name: string) => (this.labName = name));
   }
 
   addToID(num: string) {

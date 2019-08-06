@@ -22,10 +22,10 @@ type labRequest struct {
 }
 
 // LogAttendance logs the given BYUID's attendance to the current lab
-func LogAttendance(byuID string) error {
+func LogAttendance(byuID, labID string) error {
 
 	req, err := json.Marshal(&labRequest{
-		LabID:      "100",
+		LabID:      labID,
 		Time:       time.Now(),
 		BYUID:      byuID,
 		Action:     "enter",

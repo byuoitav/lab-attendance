@@ -7,6 +7,7 @@ import (
 	"github.com/byuoitav/central-event-system/messenger"
 	"github.com/byuoitav/common/log"
 	"github.com/byuoitav/common/nerr"
+	"github.com/byuoitav/common/structs"
 	"github.com/byuoitav/common/v2/events"
 	"github.com/byuoitav/lab-attendance/labapi"
 	"github.com/byuoitav/wso2services/wso2requests"
@@ -31,8 +32,8 @@ type UAPIField struct {
 	Description string `json:"description"`
 }
 
-// Login will check the given BYUID for validity and then call the Lab-Attendan/ce API to log the user's attendance
-func Login(m *messenger.Messenger, i events.BasicDeviceInfo) func(echo.Context) error {
+// Login will check the given BYUID for validity and then call the Lab-Attendance API to log the user's attendance
+func Login(m *messenger.Messenger, i events.BasicDeviceInfo, config structs.LabConfig) func(echo.Context) error {
 
 	return func(ctx echo.Context) error {
 
@@ -62,7 +63,7 @@ func Login(m *messenger.Messenger, i events.BasicDeviceInfo) func(echo.Context) 
 
 		log.L.Debugf("Successfully validated BYU ID %s: %s (%s)\n", byuID, res.Basic.Name.Value, res.Basic.NetID.Value)
 
-		err2 := labapi.LogAttendance(byuID)
+		err2 := labapi.LogAttendance(byuID, config.LabID)
 		if err2 != nil {
 			err = nerr.Createf("Internal", "Error while attemtping to log attendance to lab for BYU ID %s: %s", byuID, err)
 			log.L.Error(err)
