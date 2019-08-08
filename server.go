@@ -3,26 +3,27 @@ package main
 import (
 	"os"
 
-	"github.com/byuoitav/central-event-system/hub/base"
-	"github.com/byuoitav/central-event-system/messenger"
 	"github.com/byuoitav/common"
 	"github.com/byuoitav/common/db"
 	"github.com/byuoitav/common/log"
 	"github.com/byuoitav/common/v2/events"
 	"github.com/byuoitav/lab-attendance/eventforwarder"
 	"github.com/byuoitav/lab-attendance/handlers"
+	"github.com/byuoitav/lab-attendance/lab"
+	"github.com/byuoitav/lab-attendance/messenger"
 	"github.com/labstack/echo/middleware"
 )
 
 func main() {
 
 	log.SetLevel("debug")
+
 	deviceInfo := events.GenerateBasicDeviceInfo(os.Getenv("SYSTEM_ID"))
-	msgr, nerr := messenger.BuildMessenger(os.Getenv("HUB_ADDRESS"), base.Messenger, 1000)
-	if nerr != nil {
-		log.L.Errorf("Error while building messenger: %s", nerr)
+
+	msgr, err := messenger.New(os.Getenv("HUB_ADDRESS"), deviceInfo)
+	if err != nil {
+		log.L.Errorf("Error while building messenger: %s", err)
 	}
-	msgr.SubscribeToRooms(deviceInfo.RoomID)
 
 	config, err := db.GetDB().GetLabConfig(deviceInfo.RoomID)
 	if err != nil {
@@ -31,13 +32,19 @@ func main() {
 
 	log.L.Debugf("Got Lab Config for room %s: %+v", deviceInfo.RoomID, config)
 
+	lab := lab.Lab{
+		ID: config.LabID,
+		M:  msgr,
+	}
+
 	ef, _ := eventforwarder.NewService()
+	msgr.Register(lab.Handle)
 
 	router := common.NewRouter()
 
 	port := ":8243"
 
-	router.POST("/api/v1/login/:byuID", handlers.Login(msgr, deviceInfo, config))
+	router.POST("/api/v1/login/:byuID", handlers.Login(msgr, deviceInfo, lab))
 	router.GET("/api/v1/config", handlers.GetConfig(config))
 	router.GET("/websocket", ef.HandleWebsocket)
 
