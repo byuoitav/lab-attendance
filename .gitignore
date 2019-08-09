@@ -12,4 +12,7 @@
 *.out
 
 # Binary
-lab-attendance
+lab-attendance*
+
+# Angular dist
+*-dist
