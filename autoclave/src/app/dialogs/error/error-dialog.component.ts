@@ -13,7 +13,11 @@ export class ErrorDialogComponent implements OnInit {
     public data: {
       msg: string;
     }
-  ) {}
+  ) {
+    setTimeout(() => {
+      this.ref.close();
+    }, 3000);
+  }
 
   ngOnInit() {}
 
