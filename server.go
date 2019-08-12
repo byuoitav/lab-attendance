@@ -22,7 +22,7 @@ func main() {
 
 	msgr, err := messenger.New(os.Getenv("HUB_ADDRESS"), deviceInfo)
 	if err != nil {
-		log.L.Errorf("Error while building messenger: %s", err)
+		log.L.Fatalf("Error while building messenger: %s", err)
 	}
 
 	config, err := db.GetDB().GetLabConfig(deviceInfo.RoomID)
