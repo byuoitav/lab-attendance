@@ -1,16 +1,7 @@
 github.com/byuoitav/central-event-system v0.0.0-20190603175952-a34290e5e8c4 h1:CpNnkuXVG2y2oM+M57Gnoz/t81pXwP0KIXE9aRaYcDU=
 github.com/byuoitav/central-event-system v0.0.0-20190603175952-a34290e5e8c4/go.mod h1:+KCvx75wISCCkCrgIWRdlJxRXlA2yxQvR4HHgU/TdpU=
-github.com/byuoitav/common v0.0.0-20190628161733-e9fc3e08f534 h1:JKVIXlKV5xSpRw8cRC5J6vQdN4V3XddDkqXq+BDgVbY=
-github.com/byuoitav/common v0.0.0-20190628161733-e9fc3e08f534/go.mod h1:YTDTFEmez7HU3oyCIWjU3RfQ/P6v24LEzH5YUebph7I=
-github.com/byuoitav/common v0.0.0-20190806170550-e15476baa784 h1:Y3ahyOcovu2nvEk9vf7Hl3QAfEi+qCfptZddRrJ30Fw=
-github.com/byuoitav/common v0.0.0-20190806170550-e15476baa784/go.mod h1:YTDTFEmez7HU3oyCIWjU3RfQ/P6v24LEzH5YUebph7I=
 github.com/byuoitav/common v0.0.0-20190806174409-6d3b2b316fe1 h1:4+xMk3Vz2AnuiT+SshLgA/PL9a8ys9CQcSHTs7ZGFJE=
 github.com/byuoitav/common v0.0.0-20190806174409-6d3b2b316fe1/go.mod h1:YTDTFEmez7HU3oyCIWjU3RfQ/P6v24LEzH5YUebph7I=
-github.com/byuoitav/common v0.0.0-20190808151347-e74d48c9a3cf h1:r/qPSI0swCwUIEaS9bKu9x6qQ587akTgFpnaWoSFOH4=
-github.com/byuoitav/messenger v0.0.0-20180828160921-3e3d90874a2f h1:injDBPObzQwrZ95YAPWGymZjypCjllS4DFASaIjOvMs=
-github.com/byuoitav/messenger v0.0.0-20180828160921-3e3d90874a2f/go.mod h1:EZBKOVT2DmqlIRkBFWrSWkawAH6uKNAt7EZhqb+8vhQ=
-github.com/byuoitav/wso2services v0.0.0-20190717210600-ca09dbf05034 h1:WSBSWd0Mo7jmdoOeAXBN2C5T+k7x46bx0Fs79fVV9qo=
-github.com/byuoitav/wso2services v0.0.0-20190717210600-ca09dbf05034/go.mod h1:coHjR6JEYwJ3YDnDhPOX80JF3H9JniwvlFC8cVpqzGI=
 github.com/byuoitav/wso2services v0.0.0-20190725042859-a89925ca0ae9 h1:4ahyc+mScL9i3JT2EqWmytsr3YQrR5XAfFTkuM7ByLk=
 github.com/byuoitav/wso2services v0.0.0-20190725042859-a89925ca0ae9/go.mod h1:coHjR6JEYwJ3YDnDhPOX80JF3H9JniwvlFC8cVpqzGI=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

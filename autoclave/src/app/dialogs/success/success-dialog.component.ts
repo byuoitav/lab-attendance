@@ -8,16 +8,12 @@ import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material";
 })
 export class SuccessDialogComponent implements OnInit {
   constructor(
-    public ref: MatDialogRef<SuccessDialogComponent>,
+    private ref: MatDialogRef<SuccessDialogComponent>,
     @Inject(MAT_DIALOG_DATA)
     public data: {
       msg: string;
     }
-  ) {
-    setTimeout(() => {
-      this.ref.close();
-    }, 1000);
-  }
+  ) {}
 
   ngOnInit() {}
 
