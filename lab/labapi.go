@@ -65,8 +65,8 @@ func (l Lab) LogAttendanceForCard(cardID string) error {
 
 		if err.Type == "request-error" && res.StatusCode == http.StatusNotFound {
 			l.M.SendEvent(events.Event{
-				Key:   "Login",
-				Value: "False",
+				Key:   "login",
+				Value: "false",
 				Data:  fmt.Sprintf("ID Card is not associated to a valid Identity"),
 			})
 			return fmt.Errorf("No matching identity found for Card ID %s", cardID)
@@ -78,16 +78,16 @@ func (l Lab) LogAttendanceForCard(cardID string) error {
 		err = nerr.Createf("Internal", "Error while attempting to validate the Card ID %s: %s", cardID, err)
 		log.L.Error(err)
 		l.M.SendEvent(events.Event{
-			Key:   "Login",
-			Value: "False",
+			Key:   "login",
+			Value: "false",
 		})
 		return err
 	}
 
 	if len(q.Values) < 1 {
 		l.M.SendEvent(events.Event{
-			Key:   "Login",
-			Value: "False",
+			Key:   "login",
+			Value: "false",
 			Data:  fmt.Sprintf("ID Card is not associated to a valid Identity"),
 		})
 		return fmt.Errorf("No matching identity found for Card ID %s", cardID)
@@ -105,16 +105,16 @@ func (l Lab) LogAttendanceForCard(cardID string) error {
 		err = nerr.Createf("Internal", "Error while attemtping to log attendance to lab for BYU ID %s: %s", p.Basic.BYUID.Value, err)
 		log.L.Error(err)
 		l.M.SendEvent(events.Event{
-			Key:   "Login",
-			Value: "False",
+			Key:   "login",
+			Value: "false",
 		})
 		return err
 	}
 
 	// Send successful event
 	l.M.SendEvent(events.Event{
-		Key:   "Login",
-		Value: "True",
+		Key:   "login",
+		Value: "true",
 		User:  p.Basic.NetID.Value,
 		Data:  p.Basic.Name.Value,
 	})
@@ -133,8 +133,8 @@ func (l Lab) LogAttendanceForBYUID(byuID string) error {
 
 		if err.Type == "request-error" && res.StatusCode == http.StatusNotFound {
 			l.M.SendEvent(events.Event{
-				Key:   "Login",
-				Value: "False",
+				Key:   "login",
+				Value: "false",
 				Data:  fmt.Sprintf("BYUID: %s is not a valid BYUID.", byuID),
 			})
 			return fmt.Errorf("No matching identity found for BYUID %s", byuID)
@@ -146,8 +146,8 @@ func (l Lab) LogAttendanceForBYUID(byuID string) error {
 		err = nerr.Createf("Internal", "Error while attempting to validate the BYU ID %s: %s", byuID, err)
 		log.L.Error(err)
 		l.M.SendEvent(events.Event{
-			Key:   "Login",
-			Value: "False",
+			Key:   "login",
+			Value: "false",
 		})
 		return err
 	}
@@ -163,16 +163,16 @@ func (l Lab) LogAttendanceForBYUID(byuID string) error {
 		err = nerr.Createf("Internal", "Error while attemtping to log attendance to lab for BYU ID %s: %s", byuID, err)
 		log.L.Error(err)
 		l.M.SendEvent(events.Event{
-			Key:   "Login",
-			Value: "False",
+			Key:   "login",
+			Value: "false",
 		})
 		return err
 	}
 
 	// Send successful event
 	l.M.SendEvent(events.Event{
-		Key:   "Login",
-		Value: "True",
+		Key:   "login",
+		Value: "true",
 		User:  p.Basic.NetID.Value,
 		Data:  p.Basic.Name.Value,
 	})
