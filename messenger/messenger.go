@@ -38,6 +38,8 @@ func New(addr string, info events.BasicDeviceInfo) (*Messenger, error) {
 		info: info,
 	}
 
+	go msgr.handleEvents()
+
 	return msgr, nil
 }
 
