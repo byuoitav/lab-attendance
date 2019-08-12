@@ -68,19 +68,22 @@ func (s *Service) forwardEvents() {
 	for {
 		e = s.m.ReceiveEvent()
 
-		s.clientMux.Lock()
-		for c := range s.wsClients {
-			c.SetWriteDeadline(time.Now().Add(writeWait))
-			err := c.WriteJSON(e)
-			if err != nil {
-				log.L.Errorf("Error while forwarding event to ws client: %s", err)
-				delete(s.wsClients, c)
-				c.WriteMessage(websocket.CloseMessage, []byte{})
-				c.Close()
-			}
-		}
+		if e.Key == "login" || e.Key == "card-read-error" {
 
-		s.clientMux.Unlock()
+			s.clientMux.Lock()
+			for c := range s.wsClients {
+				c.SetWriteDeadline(time.Now().Add(writeWait))
+				err := c.WriteJSON(e)
+				if err != nil {
+					log.L.Errorf("Error while forwarding event to ws client: %s", err)
+					delete(s.wsClients, c)
+					c.WriteMessage(websocket.CloseMessage, []byte{})
+					c.Close()
+				}
+			}
+
+			s.clientMux.Unlock()
+		}
 	}
 
 }
