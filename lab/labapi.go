@@ -31,6 +31,11 @@ type Lab struct {
 	ID string
 }
 
+// personsQueryResponse represents the response structure given by the Persons v3 API when a query is requested
+type personsQueryResponse struct {
+	Values []personsResponse `json:"values"`
+}
+
 // personsResponse represents the response structure given by the Persons v3 API
 type personsResponse struct {
 	Basic personsBasicFieldSet `json:"basic"`
@@ -52,10 +57,10 @@ type uapiField struct {
 
 // LogAttendanceForCard validates the cardID, translates it into a BYUID and then logs the user's attendance in the given lab
 func (l Lab) LogAttendanceForCard(cardID string) error {
-	p := personsResponse{}
+	q := personsQueryResponse{}
 
 	// Call Persons v3 to validate the BYUID and get the name of the user
-	err, res, _ := wso2requests.MakeWSO2RequestReturnResponse("GET", fmt.Sprintf("https://api.byu.edu:443/byuapi/persons/v3/?credentials.credential_type=SEOS_CARD&credentials.credential_id=%s", cardID), nil, &p)
+	err, res, _ := wso2requests.MakeWSO2RequestReturnResponse("GET", fmt.Sprintf("https://api.byu.edu:443/byuapi/persons/v3/?credentials.credential_type=SEOS_CARD&credentials.credential_id=%s", cardID), nil, &q)
 	if err != nil {
 
 		if err.Type == "request-error" && res.StatusCode == http.StatusNotFound {
@@ -79,6 +84,16 @@ func (l Lab) LogAttendanceForCard(cardID string) error {
 		return err
 	}
 
+	if len(q.Values) < 1 {
+		l.M.SendEvent(events.Event{
+			Key:   "Login",
+			Value: "False",
+			Data:  fmt.Sprintf("ID Card is not associated to a valid Identity"),
+		})
+		return fmt.Errorf("No matching identity found for Card ID %s", cardID)
+	}
+
+	p := q.Values[0]
 	log.L.Debugf("Successfully validated Card ID %s: %s (%s)\n", cardID, p.Basic.Name.Value, p.Basic.NetID.Value)
 
 	err2 := l.logAttendance(p.Basic.BYUID.Value)
