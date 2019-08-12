@@ -27,7 +27,7 @@ func main() {
 
 	config, err := db.GetDB().GetLabConfig(deviceInfo.RoomID)
 	if err != nil {
-		log.L.Errorf("Error while trying to get Lab Config from the database: %s", err)
+		log.L.Fatalf("Error while trying to get Lab Config from the database: %s", err)
 	}
 
 	log.L.Debugf("Got Lab Config for room %s: %+v", deviceInfo.RoomID, config)
