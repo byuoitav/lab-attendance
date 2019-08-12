@@ -68,8 +68,6 @@ func (s *Service) forwardEvents() {
 	for {
 		e = s.m.ReceiveEvent()
 
-		log.L.Debugf("Forwarding event: %v+", e)
-
 		s.clientMux.Lock()
 		for c := range s.wsClients {
 			c.SetWriteDeadline(time.Now().Add(writeWait))
