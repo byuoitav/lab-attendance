@@ -65,8 +65,6 @@ func (m *Messenger) handleEvents() {
 	for {
 		e = m.m.ReceiveEvent()
 
-		log.L.Debugf("Got event: %+v\n", e)
-
 		m.hMu.Lock()
 		for _, h := range m.handlers {
 			h(e)
