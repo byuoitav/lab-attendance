@@ -37,7 +37,7 @@ import { ErrorDialogComponent } from "./dialogs/error/error-dialog.component";
     HttpClientModule
   ],
   providers: [],
-  entryComponents: [SuccessDialogComponent],
+  entryComponents: [SuccessDialogComponent, ErrorDialogComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule {}

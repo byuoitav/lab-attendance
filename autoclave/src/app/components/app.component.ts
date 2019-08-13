@@ -21,32 +21,25 @@ export class AppComponent {
           });
 
           if (sDialogs.length === 0) {
-            const ref = this.dialog.open(SuccessDialogComponent, {
+            this.dialog.open(SuccessDialogComponent, {
               width: "75vw",
               data: {
                 msg: data.data + " (" + data.user + ") successfully checked in!"
               }
             });
-            setTimeout(() => {
-              ref.close();
-            }, 1000);
           }
-          console.log(data);
         } else {
           const eDialogs = this.dialog.openDialogs.filter(d => {
             return d.componentInstance instanceof ErrorDialogComponent;
           });
 
           if (eDialogs.length === 0) {
-            const ref = this.dialog.open(SuccessDialogComponent, {
+            this.dialog.open(ErrorDialogComponent, {
               width: "75vw",
               data: {
                 msg: data.data
               }
             });
-            setTimeout(() => {
-              ref.close();
-            }, 3000);
           }
         }
       }
@@ -57,15 +50,12 @@ export class AppComponent {
         });
 
         if (eDialogs.length === 0) {
-          const ref = this.dialog.open(SuccessDialogComponent, {
+          this.dialog.open(ErrorDialogComponent, {
             width: "75vw",
             data: {
               msg: "Unable to read card, please try your ID Card again."
             }
           });
-          setTimeout(() => {
-            ref.close();
-          }, 3000);
         }
       }
     });

@@ -13,7 +13,11 @@ export class SuccessDialogComponent implements OnInit {
     public data: {
       msg: string;
     }
-  ) {}
+  ) {
+    setTimeout(() => {
+      this.ref.close();
+    }, 1000);
+  }
 
   ngOnInit() {}
 
