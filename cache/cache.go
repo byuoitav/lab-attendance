@@ -40,6 +40,23 @@ func New() (*Cache, error) {
 		return nil, fmt.Errorf("Error while trying to create bbolt db: %s", err)
 	}
 
+	err = db.Update(func(tx *bbolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte(personsBucket))
+		if err != nil {
+			return fmt.Errorf("Error while creating persons bucket: %s", err)
+		}
+		_, err = tx.CreateBucketIfNotExists([]byte(loginsBucket))
+		if err != nil {
+			return fmt.Errorf("Error while creating logins bucket: %s", err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("Error while initializing bbolt database: %s", err)
+	}
+
 	c := &Cache{
 		db: db,
 	}
