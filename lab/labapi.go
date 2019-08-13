@@ -66,7 +66,7 @@ func (l Lab) LogAttendanceForCard(cardID string) error {
 		// Call Persons v3 to validate the BYUID and get the name of the user
 		q := personsQueryResponse{}
 		err2, res, _ := wso2requests.MakeWSO2RequestReturnResponse("GET", fmt.Sprintf("https://api.byu.edu:443/byuapi/persons/v3/?credentials.credential_type=SEOS_CARD&credentials.credential_id=%s", cardID), nil, &q)
-		if err != nil {
+		if err2 != nil {
 
 			if err2.Type == "request-error" && res.StatusCode == http.StatusNotFound {
 				l.M.SendEvent(events.Event{
@@ -80,8 +80,8 @@ func (l Lab) LogAttendanceForCard(cardID string) error {
 			// TODO: Theoretically all other failures here should result in a check in cache
 			// if the BYUID does not exist in cache then an offline message should be returned
 
-			err2 = nerr.Createf("Internal", "Error while attempting to validate the Card ID %s: %s", cardID, err)
-			log.L.Error(err)
+			err2 = nerr.Createf("Internal", "Error while attempting to validate the Card ID %s: %s", cardID, err2)
+			log.L.Error(err2)
 			l.M.SendEvent(events.Event{
 				Key:   "login",
 				Value: "false",
@@ -144,10 +144,10 @@ func (l Lab) LogAttendanceForBYUID(byuID string) error {
 		r := personsResponse{}
 
 		// Call Persons v3 to validate the BYUID and get the name of the user
-		err, res, _ := wso2requests.MakeWSO2RequestReturnResponse("GET", fmt.Sprintf("https://api.byu.edu/byuapi/persons/v3/%s", byuID), nil, &r)
-		if err != nil {
+		err2, res, _ := wso2requests.MakeWSO2RequestReturnResponse("GET", fmt.Sprintf("https://api.byu.edu/byuapi/persons/v3/%s", byuID), nil, &r)
+		if err2 != nil {
 
-			if err.Type == "request-error" && res.StatusCode == http.StatusNotFound {
+			if err2.Type == "request-error" && res.StatusCode == http.StatusNotFound {
 				l.M.SendEvent(events.Event{
 					Key:   "login",
 					Value: "false",
@@ -159,13 +159,13 @@ func (l Lab) LogAttendanceForBYUID(byuID string) error {
 			// TODO: Theoretically all other failures here should result in a check in cache
 			// if the BYUID does not exist in cache then an offline message should be returned
 
-			err = nerr.Createf("Internal", "Error while attempting to validate the BYU ID %s: %s", byuID, err)
-			log.L.Error(err)
+			err2 = nerr.Createf("Internal", "Error while attempting to validate the BYU ID %s: %s", byuID, err2)
+			log.L.Error(err2)
 			l.M.SendEvent(events.Event{
 				Key:   "login",
 				Value: "false",
 			})
-			return err
+			return err2
 		}
 
 		p.BYUID = r.Basic.BYUID.Value
@@ -177,8 +177,8 @@ func (l Lab) LogAttendanceForBYUID(byuID string) error {
 
 	log.L.Debugf("Successfully validated BYU ID %s: %s (%s)\n", byuID, p.Name, p.NetID)
 
-	err2 := l.logAttendance(byuID)
-	if err2 != nil {
+	err = l.logAttendance(byuID)
+	if err != nil {
 
 		// TODO: Theoretically any failure here should cause a cache, not an error, so an offline event should be sent
 		// We need to validate a couple of cases for cache. What if we get an error back from the API? for non 500s?
