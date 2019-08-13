@@ -10,6 +10,7 @@ import (
 	"github.com/byuoitav/common/log"
 	"github.com/byuoitav/common/nerr"
 	"github.com/byuoitav/common/v2/events"
+	"github.com/byuoitav/lab-attendance/cache"
 	"github.com/byuoitav/lab-attendance/messenger"
 	"github.com/byuoitav/wso2services/wso2requests"
 )
@@ -27,8 +28,9 @@ type labRequest struct {
 
 // Lab represents the configuration for and functions that can be run on a Lab
 type Lab struct {
-	M  *messenger.Messenger
-	ID string
+	M     *messenger.Messenger
+	ID    string
+	Cache *cache.Cache
 }
 
 // personsQueryResponse represents the response structure given by the Persons v3 API when a query is requested
@@ -57,13 +59,36 @@ type uapiField struct {
 
 // LogAttendanceForCard validates the cardID, translates it into a BYUID and then logs the user's attendance in the given lab
 func (l Lab) LogAttendanceForCard(cardID string) error {
-	q := personsQueryResponse{}
 
-	// Call Persons v3 to validate the BYUID and get the name of the user
-	err, res, _ := wso2requests.MakeWSO2RequestReturnResponse("GET", fmt.Sprintf("https://api.byu.edu:443/byuapi/persons/v3/?credentials.credential_type=SEOS_CARD&credentials.credential_id=%s", cardID), nil, &q)
+	p, err := l.Cache.GetPersonByCardID(cardID)
 	if err != nil {
+		// Call Persons v3 to validate the BYUID and get the name of the user
+		q := personsQueryResponse{}
+		err2, res, _ := wso2requests.MakeWSO2RequestReturnResponse("GET", fmt.Sprintf("https://api.byu.edu:443/byuapi/persons/v3/?credentials.credential_type=SEOS_CARD&credentials.credential_id=%s", cardID), nil, &q)
+		if err != nil {
 
-		if err.Type == "request-error" && res.StatusCode == http.StatusNotFound {
+			if err2.Type == "request-error" && res.StatusCode == http.StatusNotFound {
+				l.M.SendEvent(events.Event{
+					Key:   "login",
+					Value: "false",
+					Data:  fmt.Sprintf("ID Card is not associated to a valid Identity"),
+				})
+				return fmt.Errorf("No matching identity found for Card ID %s", cardID)
+			}
+
+			// TODO: Theoretically all other failures here should result in a check in cache
+			// if the BYUID does not exist in cache then an offline message should be returned
+
+			err2 = nerr.Createf("Internal", "Error while attempting to validate the Card ID %s: %s", cardID, err)
+			log.L.Error(err)
+			l.M.SendEvent(events.Event{
+				Key:   "login",
+				Value: "false",
+			})
+			return err2
+		}
+
+		if len(q.Values) < 1 {
 			l.M.SendEvent(events.Event{
 				Key:   "login",
 				Value: "false",
@@ -72,37 +97,23 @@ func (l Lab) LogAttendanceForCard(cardID string) error {
 			return fmt.Errorf("No matching identity found for Card ID %s", cardID)
 		}
 
-		// TODO: Theoretically all other failures here should result in a check in cache
-		// if the BYUID does not exist in cache then an offline message should be returned
+		p.BYUID = q.Values[0].Basic.BYUID.Value
+		p.Name = q.Values[0].Basic.Name.Value
+		p.NetID = q.Values[0].Basic.NetID.Value
+		p.CardID = cardID
 
-		err = nerr.Createf("Internal", "Error while attempting to validate the Card ID %s: %s", cardID, err)
-		log.L.Error(err)
-		l.M.SendEvent(events.Event{
-			Key:   "login",
-			Value: "false",
-		})
-		return err
+		l.Cache.SavePersonToCache(p)
 	}
 
-	if len(q.Values) < 1 {
-		l.M.SendEvent(events.Event{
-			Key:   "login",
-			Value: "false",
-			Data:  fmt.Sprintf("ID Card is not associated to a valid Identity"),
-		})
-		return fmt.Errorf("No matching identity found for Card ID %s", cardID)
-	}
+	log.L.Debugf("Successfully validated Card ID %s: %s (%s)\n", cardID, p.Name, p.NetID)
 
-	p := q.Values[0]
-	log.L.Debugf("Successfully validated Card ID %s: %s (%s)\n", cardID, p.Basic.Name.Value, p.Basic.NetID.Value)
-
-	err2 := l.logAttendance(p.Basic.BYUID.Value)
-	if err2 != nil {
+	err = l.logAttendance(p.BYUID)
+	if err != nil {
 
 		// TODO: Theoretically any failure here should cause a cache, not an error, so an offline event should be sent
 		// We need to validate a couple of cases for cache. What if we get an error back from the API? for non 500s?
 
-		err = nerr.Createf("Internal", "Error while attemtping to log attendance to lab for BYU ID %s: %s", p.Basic.BYUID.Value, err)
+		err = nerr.Createf("Internal", "Error while attemtping to log attendance to lab for BYU ID %s: %s", p.BYUID, err)
 		log.L.Error(err)
 		l.M.SendEvent(events.Event{
 			Key:   "login",
@@ -115,8 +126,8 @@ func (l Lab) LogAttendanceForCard(cardID string) error {
 	l.M.SendEvent(events.Event{
 		Key:   "login",
 		Value: "true",
-		User:  p.Basic.NetID.Value,
-		Data:  p.Basic.Name.Value,
+		User:  p.NetID,
+		Data:  p.Name,
 	})
 
 	return nil
@@ -125,34 +136,44 @@ func (l Lab) LogAttendanceForCard(cardID string) error {
 
 // LogAttendanceForBYUID validates the BYUID and then logs the user's attendance in the given lab
 func (l Lab) LogAttendanceForBYUID(byuID string) error {
-	p := personsResponse{}
 
-	// Call Persons v3 to validate the BYUID and get the name of the user
-	err, res, _ := wso2requests.MakeWSO2RequestReturnResponse("GET", fmt.Sprintf("https://api.byu.edu/byuapi/persons/v3/%s", byuID), nil, &p)
+	p, err := l.Cache.GetPersonByBYUID(byuID)
 	if err != nil {
+		r := personsResponse{}
 
-		if err.Type == "request-error" && res.StatusCode == http.StatusNotFound {
+		// Call Persons v3 to validate the BYUID and get the name of the user
+		err, res, _ := wso2requests.MakeWSO2RequestReturnResponse("GET", fmt.Sprintf("https://api.byu.edu/byuapi/persons/v3/%s", byuID), nil, &r)
+		if err != nil {
+
+			if err.Type == "request-error" && res.StatusCode == http.StatusNotFound {
+				l.M.SendEvent(events.Event{
+					Key:   "login",
+					Value: "false",
+					Data:  fmt.Sprintf("BYUID: %s is not a valid BYUID.", byuID),
+				})
+				return fmt.Errorf("No matching identity found for BYUID %s", byuID)
+			}
+
+			// TODO: Theoretically all other failures here should result in a check in cache
+			// if the BYUID does not exist in cache then an offline message should be returned
+
+			err = nerr.Createf("Internal", "Error while attempting to validate the BYU ID %s: %s", byuID, err)
+			log.L.Error(err)
 			l.M.SendEvent(events.Event{
 				Key:   "login",
 				Value: "false",
-				Data:  fmt.Sprintf("BYUID: %s is not a valid BYUID.", byuID),
 			})
-			return fmt.Errorf("No matching identity found for BYUID %s", byuID)
+			return err
 		}
 
-		// TODO: Theoretically all other failures here should result in a check in cache
-		// if the BYUID does not exist in cache then an offline message should be returned
+		p.BYUID = r.Basic.BYUID.Value
+		p.NetID = r.Basic.NetID.Value
+		p.Name = r.Basic.Name.Value
 
-		err = nerr.Createf("Internal", "Error while attempting to validate the BYU ID %s: %s", byuID, err)
-		log.L.Error(err)
-		l.M.SendEvent(events.Event{
-			Key:   "login",
-			Value: "false",
-		})
-		return err
+		l.Cache.SavePersonToCache(p)
 	}
 
-	log.L.Debugf("Successfully validated BYU ID %s: %s (%s)\n", byuID, p.Basic.Name.Value, p.Basic.NetID.Value)
+	log.L.Debugf("Successfully validated BYU ID %s: %s (%s)\n", byuID, p.Name, p.NetID)
 
 	err2 := l.logAttendance(byuID)
 	if err2 != nil {
@@ -173,8 +194,8 @@ func (l Lab) LogAttendanceForBYUID(byuID string) error {
 	l.M.SendEvent(events.Event{
 		Key:   "login",
 		Value: "true",
-		User:  p.Basic.NetID.Value,
-		Data:  p.Basic.Name.Value,
+		User:  p.NetID,
+		Data:  p.Name,
 	})
 
 	return nil

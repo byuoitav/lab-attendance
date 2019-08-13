@@ -7,6 +7,7 @@ import (
 	"github.com/byuoitav/common/db"
 	"github.com/byuoitav/common/log"
 	"github.com/byuoitav/common/v2/events"
+	"github.com/byuoitav/lab-attendance/cache"
 	"github.com/byuoitav/lab-attendance/eventforwarder"
 	"github.com/byuoitav/lab-attendance/handlers"
 	"github.com/byuoitav/lab-attendance/lab"
@@ -29,12 +30,17 @@ func main() {
 	if err != nil {
 		log.L.Fatalf("Error while trying to get Lab Config from the database: %s", err)
 	}
-
 	log.L.Debugf("Got Lab Config for room %s: %+v", deviceInfo.RoomID, config)
 
+	cache, err := cache.New()
+	if err != nil {
+		log.L.Fatalf("Error while trying to create cache: %s", err)
+	}
+
 	lab := lab.Lab{
-		ID: config.LabID,
-		M:  msgr,
+		ID:    config.LabID,
+		M:     msgr,
+		Cache: cache,
 	}
 
 	ef, _ := eventforwarder.NewService()
