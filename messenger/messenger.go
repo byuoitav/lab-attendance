@@ -67,7 +67,6 @@ func (m *Messenger) SendLoginEvent(p cache.Person) {
 		},
 	}
 
-	m.handleEvent(e) // Make sure the internal system also gets login events
 	m.SendEvent(e)
 }
 
@@ -80,6 +79,7 @@ func (m *Messenger) SendEvent(e events.Event) {
 
 	log.L.Debugf("lab-attendance/messenger: Raising event: %+v", e)
 
+	m.handleEvent(e) // Make sure the internal system also gets events
 	m.m.SendEvent(e)
 }
 
