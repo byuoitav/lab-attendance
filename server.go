@@ -43,8 +43,9 @@ func main() {
 		Cache: cache,
 	}
 
-	ef, _ := eventforwarder.NewService()
+	ef := eventforwarder.New()
 	msgr.Register(lab.Handle)
+	msgr.Register(ef.ForwardEvent)
 
 	router := common.NewRouter()
 

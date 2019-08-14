@@ -1,14 +1,10 @@
 package eventforwarder
 
 import (
-	"os"
 	"sync"
 	"time"
 
-	"github.com/byuoitav/central-event-system/hub/base"
-	"github.com/byuoitav/central-event-system/messenger"
 	"github.com/byuoitav/common/log"
-	"github.com/byuoitav/common/nerr"
 	"github.com/byuoitav/common/v2/events"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo"
@@ -22,28 +18,18 @@ var upgrader = websocket.Upgrader{}
 
 // Service contains the running config and dependencies for an instantiation of an eventforwarder service
 type Service struct {
-	m         *messenger.Messenger
 	wsClients map[*websocket.Conn]bool
 	clientMux sync.Mutex
 }
 
-// NewService initializes a new eventforwarder service, connects to the hub, subscribes to the room events,
+// New initializes a new eventforwarder service, connects to the hub, subscribes to the room events,
 // starts forwarding events, and then returns the service
-func NewService() (*Service, error) {
+func New() *Service {
 	s := Service{}
-	m, err := messenger.BuildMessenger(os.Getenv("HUB_ADDRESS"), base.Messenger, 1000)
-	if err != nil {
-		err = nerr.Createf("Internal", "Error while attempting to build the messenger: %s", err)
-		log.L.Error(err)
-		return nil, err
-	}
 
-	s.m = m
-	s.m.SubscribeToRooms(events.GenerateBasicDeviceInfo(os.Getenv("SYSTEM_ID")).RoomID)
 	s.wsClients = make(map[*websocket.Conn]bool, 1)
 
-	go s.forwardEvents()
-	return &s, nil
+	return &s
 }
 
 // HandleWebsocket upgrades the connection to a websocket connection and then sends
@@ -62,28 +48,24 @@ func (s *Service) HandleWebsocket(ctx echo.Context) error {
 	return nil
 }
 
-func (s *Service) forwardEvents() {
-	var e events.Event
+// ForwardEvent forwards the given event to all of the currently registered websocket clients
+func (s *Service) ForwardEvent(e events.Event) {
 
-	for {
-		e = s.m.ReceiveEvent()
+	if e.Key == "login" || e.Key == "card-read-error" {
 
-		if e.Key == "login" || e.Key == "card-read-error" {
-
-			s.clientMux.Lock()
-			for c := range s.wsClients {
-				c.SetWriteDeadline(time.Now().Add(writeWait))
-				err := c.WriteJSON(e)
-				if err != nil {
-					log.L.Errorf("Error while forwarding event to ws client: %s", err)
-					delete(s.wsClients, c)
-					c.WriteMessage(websocket.CloseMessage, []byte{})
-					c.Close()
-				}
+		s.clientMux.Lock()
+		for c := range s.wsClients {
+			c.SetWriteDeadline(time.Now().Add(writeWait))
+			err := c.WriteJSON(e)
+			if err != nil {
+				log.L.Errorf("Error while forwarding event to ws client: %s", err)
+				delete(s.wsClients, c)
+				c.WriteMessage(websocket.CloseMessage, []byte{})
+				c.Close()
 			}
-
-			s.clientMux.Unlock()
 		}
+
+		s.clientMux.Unlock()
 	}
 
 }
