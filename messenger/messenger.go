@@ -76,6 +76,9 @@ func (m *Messenger) SendEvent(e events.Event) {
 	e.TargetDevice = m.info
 	e.AffectedRoom = m.info.BasicRoomInfo
 	e.Timestamp = time.Now()
+
+	log.L.Debugf("lab-attendance/messenger: Raising event: %+v", e)
+
 	m.m.SendEvent(e)
 }
 

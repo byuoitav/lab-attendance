@@ -141,7 +141,7 @@ func (c *Cache) SavePersonToCache(p Person) error {
 		return fmt.Errorf("Error while trying to save to cache: %s", err)
 	}
 
-	log.L.Debugf("Saved person record to cache: %v+", p)
+	log.L.Debugf("Saved person record to cache: %+v", p)
 
 	return nil
 }
