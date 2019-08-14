@@ -9,6 +9,7 @@ import (
 	"github.com/byuoitav/central-event-system/messenger"
 	"github.com/byuoitav/common/log"
 	"github.com/byuoitav/common/v2/events"
+	"github.com/byuoitav/lab-attendance/cache"
 )
 
 // Messenger represents an instance of a messenger and contains all the configuration needed to run
@@ -48,6 +49,25 @@ func (m *Messenger) Register(h Handler) {
 	m.hMu.Lock()
 	m.handlers = append(m.handlers, h)
 	m.hMu.Unlock()
+}
+
+// SendLoginEvent sends a login event for the given person
+func (m *Messenger) SendLoginEvent(p cache.Person) {
+	type loginData struct {
+		FirstName string
+		Name      string
+	}
+	e := events.Event{
+		Key:   "login",
+		Value: "true",
+		User:  p.NetID,
+		Data: loginData{
+			Name:      p.Name,
+			FirstName: p.FirstName,
+		},
+	}
+
+	m.SendEvent(e)
 }
 
 // SendEvent will send the given event to the message bus ensuring that the device information and timestamp is correct

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	dbPath        = "/tmp/cache.db"
+	dbPath        = "/byu/cache.db"
 	dbPerms       = 0600
 	personsBucket = "persons"
 	loginsBucket  = "logins"
@@ -20,10 +20,11 @@ const (
 // Person is the in-cache representation of a person containing all the information about
 // an individual that lab-attendance cares about
 type Person struct {
-	BYUID  string
-	Name   string
-	CardID string
-	NetID  string
+	BYUID     string
+	Name      string
+	CardID    string
+	NetID     string
+	FirstName string
 }
 
 // Cache contains all of the information and things that an instantiation of

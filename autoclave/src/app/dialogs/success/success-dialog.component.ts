@@ -12,11 +12,12 @@ export class SuccessDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA)
     public data: {
       msg: string;
+      firstName: string;
     }
   ) {
     setTimeout(() => {
       this.ref.close();
-    }, 1000);
+    }, 2000);
   }
 
   ngOnInit() {}

@@ -45,9 +45,10 @@ type personsResponse struct {
 
 // personsBasicFieldSet represents the "basic" field set returned by the Persons v3 API
 type personsBasicFieldSet struct {
-	Name  uapiField `json:"preferred_name"`
-	NetID uapiField `json:"net_id"`
-	BYUID uapiField `json:"byu_id"`
+	Name      uapiField `json:"preferred_name"`
+	NetID     uapiField `json:"net_id"`
+	BYUID     uapiField `json:"byu_id"`
+	FirstName uapiField `json:"preferred_first_name"`
 }
 
 // uapiField represents any generic field returned in a BYU University API response
@@ -101,6 +102,7 @@ func (l Lab) LogAttendanceForCard(cardID string) error {
 		p.BYUID = q.Values[0].Basic.BYUID.Value
 		p.Name = q.Values[0].Basic.Name.Value
 		p.NetID = q.Values[0].Basic.NetID.Value
+		p.FirstName = q.Values[0].Basic.FirstName.Value
 		p.CardID = cardID
 
 		l.Cache.SavePersonToCache(p)
@@ -124,12 +126,7 @@ func (l Lab) LogAttendanceForCard(cardID string) error {
 	}
 
 	// Send successful event
-	l.M.SendEvent(events.Event{
-		Key:   "login",
-		Value: "true",
-		User:  p.NetID,
-		Data:  p.Name,
-	})
+	l.M.SendLoginEvent(p)
 
 	return nil
 
@@ -170,6 +167,7 @@ func (l Lab) LogAttendanceForBYUID(byuID string) error {
 
 		p.BYUID = r.Basic.BYUID.Value
 		p.NetID = r.Basic.NetID.Value
+		p.FirstName = r.Basic.FirstName.Value
 		p.Name = r.Basic.Name.Value
 
 		l.Cache.SavePersonToCache(p)
@@ -193,12 +191,7 @@ func (l Lab) LogAttendanceForBYUID(byuID string) error {
 	}
 
 	// Send successful event
-	l.M.SendEvent(events.Event{
-		Key:   "login",
-		Value: "true",
-		User:  p.NetID,
-		Data:  p.Name,
-	})
+	l.M.SendLoginEvent(p)
 
 	return nil
 }

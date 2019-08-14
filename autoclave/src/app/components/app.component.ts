@@ -16,6 +16,7 @@ export class AppComponent {
 
       if (data.key === "login") {
         if (data.value === "true") {
+          const eventData = JSON.parse(data.data);
           const sDialogs = this.dialog.openDialogs.filter(d => {
             return d.componentInstance instanceof SuccessDialogComponent;
           });
@@ -24,7 +25,12 @@ export class AppComponent {
             this.dialog.open(SuccessDialogComponent, {
               width: "75vw",
               data: {
-                msg: data.data + " (" + data.user + ") successfully checked in!"
+                msg:
+                  eventData.Name +
+                  " (" +
+                  data.user +
+                  ") successfully checked in!",
+                firstName: eventData.FirstName
               }
             });
           }
