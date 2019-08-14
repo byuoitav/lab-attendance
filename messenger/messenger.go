@@ -51,6 +51,18 @@ func (m *Messenger) Register(h Handler) {
 	m.hMu.Unlock()
 }
 
+// SendLoginErrorEvent sends a login-error event with the given message
+func (m *Messenger) SendLoginErrorEvent(msg string) {
+	e := events.Event{
+		Key:   "login-error",
+		Value: "true",
+		Data:  msg,
+	}
+
+	m.handleEvent(e) // Make sure the internal system also gets login-error events
+	m.SendEvent(e)
+}
+
 // SendLoginEvent sends a login event for the given person
 func (m *Messenger) SendLoginEvent(p cache.Person) {
 	type loginData struct {
@@ -67,6 +79,7 @@ func (m *Messenger) SendLoginEvent(p cache.Person) {
 		},
 	}
 
+	m.handleEvent(e) // Make sure the internal system also gets login events
 	m.SendEvent(e)
 }
 
@@ -79,7 +92,6 @@ func (m *Messenger) SendEvent(e events.Event) {
 
 	log.L.Debugf("lab-attendance/messenger: Raising event: %+v", e)
 
-	m.handleEvent(e) // Make sure the internal system also gets events
 	m.m.SendEvent(e)
 }
 

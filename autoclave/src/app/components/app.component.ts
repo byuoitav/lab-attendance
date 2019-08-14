@@ -14,12 +14,15 @@ export class AppComponent {
     events.getEventListener().subscribe(event => {
       const data = JSON.parse(event.data);
 
-      if (data.key === "login") {
-        if (data.value === "true") {
-          const sDialogs = this.dialog.openDialogs.filter(d => {
-            return d.componentInstance instanceof SuccessDialogComponent;
-          });
+      const sDialogs = this.dialog.openDialogs.filter(d => {
+        return d.componentInstance instanceof SuccessDialogComponent;
+      });
+      const eDialogs = this.dialog.openDialogs.filter(d => {
+        return d.componentInstance instanceof ErrorDialogComponent;
+      });
 
+      switch (data.key) {
+        case "login":
           if (sDialogs.length === 0) {
             this.dialog.open(SuccessDialogComponent, {
               width: "75vw",
@@ -33,11 +36,9 @@ export class AppComponent {
               }
             });
           }
-        } else {
-          const eDialogs = this.dialog.openDialogs.filter(d => {
-            return d.componentInstance instanceof ErrorDialogComponent;
-          });
+          break;
 
+        case "login-error":
           if (eDialogs.length === 0) {
             this.dialog.open(ErrorDialogComponent, {
               width: "75vw",
@@ -46,22 +47,18 @@ export class AppComponent {
               }
             });
           }
-        }
-      }
+          break;
 
-      if (data.key === "card-read-error") {
-        const eDialogs = this.dialog.openDialogs.filter(d => {
-          return d.componentInstance instanceof ErrorDialogComponent;
-        });
-
-        if (eDialogs.length === 0) {
-          this.dialog.open(ErrorDialogComponent, {
-            width: "75vw",
-            data: {
-              msg: "Unable to read card, please try your ID Card again."
-            }
-          });
-        }
+        case "card-read-error":
+          if (eDialogs.length === 0) {
+            this.dialog.open(ErrorDialogComponent, {
+              width: "75vw",
+              data: {
+                msg: "Unable to read card, please try your ID Card again."
+              }
+            });
+          }
+          break;
       }
     });
   }

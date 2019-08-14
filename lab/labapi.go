@@ -9,7 +9,6 @@ import (
 
 	"github.com/byuoitav/common/log"
 	"github.com/byuoitav/common/nerr"
-	"github.com/byuoitav/common/v2/events"
 	"github.com/byuoitav/lab-attendance/cache"
 	"github.com/byuoitav/lab-attendance/messenger"
 	"github.com/byuoitav/wso2services/wso2requests"
@@ -70,32 +69,20 @@ func (l Lab) LogAttendanceForCard(cardID string) error {
 		if err2 != nil {
 
 			if err2.Type == "request-error" && res.StatusCode == http.StatusNotFound {
-				l.M.SendEvent(events.Event{
-					Key:   "login",
-					Value: "false",
-					Data:  fmt.Sprintf("ID Card is not associated to a valid Identity"),
-				})
+				l.M.SendLoginErrorEvent("ID Card is not associated to a valid Identity")
 				return fmt.Errorf("No matching identity found for Card ID %s", cardID)
 			}
 
-			// TODO: Theoretically all other failures here should result in a check in cache
-			// if the BYUID does not exist in cache then an offline message should be returned
-
 			err2 = nerr.Createf("Internal", "Error while attempting to validate the Card ID %s: %s", cardID, err2)
 			log.L.Error(err2)
-			l.M.SendEvent(events.Event{
-				Key:   "login",
-				Value: "false",
-			})
+
+			l.M.SendLoginErrorEvent("We are unable to validate your login at this time. Please try again later.")
+
 			return err2
 		}
 
 		if len(q.Values) < 1 {
-			l.M.SendEvent(events.Event{
-				Key:   "login",
-				Value: "false",
-				Data:  fmt.Sprintf("ID Card is not associated to a valid Identity"),
-			})
+			l.M.SendLoginErrorEvent("ID Card is not associated to a valid Identity")
 			return fmt.Errorf("No matching identity found for Card ID %s", cardID)
 		}
 
@@ -118,10 +105,9 @@ func (l Lab) LogAttendanceForCard(cardID string) error {
 
 		err = nerr.Createf("Internal", "Error while attemtping to log attendance to lab for BYU ID %s: %s", p.BYUID, err)
 		log.L.Error(err)
-		l.M.SendEvent(events.Event{
-			Key:   "login",
-			Value: "false",
-		})
+
+		l.M.SendLoginErrorEvent("We are unable to log your attendance at this time. Please try again later.")
+
 		return err
 	}
 
@@ -145,23 +131,15 @@ func (l Lab) LogAttendanceForBYUID(byuID string) error {
 		if err2 != nil {
 
 			if err2.Type == "request-error" && res.StatusCode == http.StatusNotFound {
-				l.M.SendEvent(events.Event{
-					Key:   "login",
-					Value: "false",
-					Data:  fmt.Sprintf("BYUID: %s is not a valid BYUID.", byuID),
-				})
+				l.M.SendLoginErrorEvent(fmt.Sprintf("BYUID: %s is not a valid BYUID.", byuID))
 				return fmt.Errorf("No matching identity found for BYUID %s", byuID)
 			}
 
-			// TODO: Theoretically all other failures here should result in a check in cache
-			// if the BYUID does not exist in cache then an offline message should be returned
-
 			err2 = nerr.Createf("Internal", "Error while attempting to validate the BYU ID %s: %s", byuID, err2)
 			log.L.Error(err2)
-			l.M.SendEvent(events.Event{
-				Key:   "login",
-				Value: "false",
-			})
+
+			l.M.SendLoginErrorEvent("We are unable to validate your login at this time. Please try again later.")
+
 			return err2
 		}
 
@@ -183,10 +161,9 @@ func (l Lab) LogAttendanceForBYUID(byuID string) error {
 
 		err = nerr.Createf("Internal", "Error while attemtping to log attendance to lab for BYU ID %s: %s", byuID, err)
 		log.L.Error(err)
-		l.M.SendEvent(events.Event{
-			Key:   "login",
-			Value: "false",
-		})
+
+		l.M.SendLoginErrorEvent("We are unable to log your attendance at this time. Please try again later.")
+
 		return err
 	}
 
