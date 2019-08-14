@@ -67,6 +67,7 @@ func (m *Messenger) SendLoginEvent(p cache.Person) {
 		},
 	}
 
+	m.handleEvent(e) // Make sure the internal system also gets login events
 	m.SendEvent(e)
 }
 
@@ -88,11 +89,16 @@ func (m *Messenger) handleEvents() {
 	for {
 		e = m.m.ReceiveEvent()
 
-		m.hMu.Lock()
-		for _, h := range m.handlers {
-			h(e)
-		}
-
-		m.hMu.Unlock()
+		m.handleEvent(e)
 	}
+}
+
+func (m *Messenger) handleEvent(e events.Event) {
+
+	m.hMu.Lock()
+	for _, h := range m.handlers {
+		h(e)
+	}
+
+	m.hMu.Unlock()
 }
