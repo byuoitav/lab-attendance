@@ -16,6 +16,8 @@ import { ScreenSaverComponent } from "./components/screen-saver/screen-saver.com
 import { ByuIDPipe } from "./pipes/byu-id.pipe";
 import { SuccessDialogComponent } from "./dialogs/success/success-dialog.component";
 import { ErrorDialogComponent } from "./dialogs/error/error-dialog.component";
+import { ManagementComponent } from "./components/management/management.component";
+
 
 @NgModule({
   declarations: [
@@ -24,7 +26,9 @@ import { ErrorDialogComponent } from "./dialogs/error/error-dialog.component";
     ScreenSaverComponent,
     ByuIDPipe,
     SuccessDialogComponent,
-    ErrorDialogComponent
+    ManagementComponent,
+    ErrorDialogComponent,
+
   ],
   imports: [
     BrowserModule,
