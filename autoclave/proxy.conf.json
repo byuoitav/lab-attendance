@@ -1,11 +1,11 @@
 {
   "/api/*": {
-    "target": "http://localhost:8243",
+    "target": "http://jfsb-B090-LA1:8243",
     "secure": false,
     "logLevel": "debug"
   },
   "/websocket": {
-    "target": "http://localhost:8243",
+    "target": "http://jfsb-B090-LA1:8243",
     "secure": false,
     "logLevel": "debug",
     "ws": true
