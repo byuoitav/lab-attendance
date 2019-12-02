@@ -4,6 +4,8 @@ github.com/byuoitav/common v0.0.0-20190806174409-6d3b2b316fe1 h1:4+xMk3Vz2AnuiT+
 github.com/byuoitav/common v0.0.0-20190806174409-6d3b2b316fe1/go.mod h1:YTDTFEmez7HU3oyCIWjU3RfQ/P6v24LEzH5YUebph7I=
 github.com/byuoitav/wso2services v0.0.0-20190725042859-a89925ca0ae9 h1:4ahyc+mScL9i3JT2EqWmytsr3YQrR5XAfFTkuM7ByLk=
 github.com/byuoitav/wso2services v0.0.0-20190725042859-a89925ca0ae9/go.mod h1:coHjR6JEYwJ3YDnDhPOX80JF3H9JniwvlFC8cVpqzGI=
+github.com/byuoitav/wso2services v0.0.0-20190911022430-c396c6091bcc h1:Av3Wt5SAY+OFEXaEIXsNa4ASol8Svs0DsvT++J3dHJQ=
+github.com/byuoitav/wso2services v0.0.0-20190911022430-c396c6091bcc/go.mod h1:coHjR6JEYwJ3YDnDhPOX80JF3H9JniwvlFC8cVpqzGI=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/byuoitav/central-event-system v0.0.0-20190603175952-a34290e5e8c4
 	github.com/byuoitav/common v0.0.0-20190806174409-6d3b2b316fe1
-	github.com/byuoitav/wso2services v0.0.0-20190725042859-a89925ca0ae9
+	github.com/byuoitav/wso2services v0.0.0-20190911022430-c396c6091bcc
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/fatih/color v1.7.0 // indirect
 	github.com/gorilla/websocket v1.4.0
