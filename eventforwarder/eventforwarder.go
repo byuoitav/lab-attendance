@@ -1,17 +1,24 @@
 package eventforwarder
 
 import (
+	"fmt"
+	"os"
 	"sync"
 	"time"
 
+	"github.com/byuoitav/central-event-system/hub/base"
+	"github.com/byuoitav/central-event-system/messenger"
 	"github.com/byuoitav/common/log"
 	"github.com/byuoitav/common/v2/events"
+	"github.com/byuoitav/device-monitoring/localsystem"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo"
 )
 
 const (
-	writeWait = 10 * time.Second
+	writeWait      = 10 * time.Second
+	pongWait       = 20 * time.Second
+	maxMessageSize = 512
 )
 
 var upgrader = websocket.Upgrader{}
@@ -28,7 +35,7 @@ func New() *Service {
 	s := Service{}
 
 	s.wsClients = make(map[*websocket.Conn]bool, 1)
-
+	go s.reportWebSocketCount()
 	return &s
 }
 
@@ -37,12 +44,14 @@ func New() *Service {
 func (s *Service) HandleWebsocket(ctx echo.Context) error {
 
 	c, err := upgrader.Upgrade(ctx.Response().Writer, ctx.Request(), nil)
+	// c.SetPingHandler(func(string) error { c.SetReadDeadline(time.Now().Add(60 * time.Second)); return nil })
 	if err != nil {
 		log.L.Errorf("Error while attempting to upgrade connection to websocket: %v", err)
 	}
 
 	s.clientMux.Lock()
 	s.wsClients[c] = true
+	go s.handleClose(c)
 	s.clientMux.Unlock()
 
 	return nil
@@ -68,4 +77,52 @@ func (s *Service) ForwardEvent(e events.Event) {
 		s.clientMux.Unlock()
 	}
 
+}
+
+func (s *Service) handleClose(c *websocket.Conn) {
+	defer func() {
+		c.Close()
+	}()
+	c.SetReadLimit(maxMessageSize)
+	c.SetReadDeadline(time.Now().Add(pongWait))
+	c.SetPongHandler(func(string) error { c.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+	for {
+		_, msg, err := c.ReadMessage()
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
+				log.L.Infof("error: %v", err)
+				delete(s.wsClients, c)
+				c.WriteMessage(websocket.CloseMessage, []byte{})
+				c.Close()
+			}
+			break
+		}
+		log.L.Infof("Received message from socket: %s", msg)
+	}
+}
+
+func (s *Service) reportWebSocketCount() {
+	id := localsystem.MustSystemID()
+	deviceInfo := events.GenerateBasicDeviceInfo(id)
+	roomInfo := events.GenerateBasicRoomInfo(deviceInfo.RoomID)
+	messenger, err := messenger.BuildMessenger(os.Getenv("HUB_ADDRESS"), base.Messenger, 1000)
+	if err != nil {
+		log.L.Errorf("unable to build websocket count messenger: %s", err.Error())
+	}
+	for {
+		log.L.Debugf("sending websocket count of : %d", len(s.wsClients))
+		countEvent := events.Event{
+			GeneratingSystem: id,
+			Timestamp:        time.Now(),
+			EventTags:        []string{events.DetailState},
+			TargetDevice:     deviceInfo,
+			AffectedRoom:     roomInfo,
+			Key:              "websocket-count",
+			Value:            fmt.Sprintf("%v", len(s.wsClients)),
+		}
+		if messenger != nil {
+			messenger.SendEvent(countEvent)
+		}
+		time.Sleep(3 * time.Minute)
+	}
 }
