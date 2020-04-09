@@ -51,7 +51,7 @@ func (s *Service) HandleWebsocket(ctx echo.Context) error {
 
 	s.clientMux.Lock()
 	s.wsClients[c] = true
-	go s.handleClose(c)
+	// go s.handleClose(c)
 	s.clientMux.Unlock()
 
 	return nil
@@ -89,7 +89,7 @@ func (s *Service) handleClose(c *websocket.Conn) {
 	for {
 		_, msg, err := c.ReadMessage()
 		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
+			if websocket.IsCloseError(err, websocket.CloseGoingAway) {
 				log.L.Infof("error: %v", err)
 				delete(s.wsClients, c)
 				c.WriteMessage(websocket.CloseMessage, []byte{})
@@ -123,6 +123,6 @@ func (s *Service) reportWebSocketCount() {
 		if messenger != nil {
 			messenger.SendEvent(countEvent)
 		}
-		time.Sleep(3 * time.Minute)
+		time.Sleep(1 * time.Minute)
 	}
 }
