@@ -17,7 +17,7 @@ import (
 
 const (
 	writeWait      = 10 * time.Second
-	pongWait       = 20 * time.Second
+	pongWait       = 60 * time.Second
 	maxMessageSize = 512
 )
 
@@ -36,6 +36,7 @@ func New() *Service {
 
 	s.wsClients = make(map[*websocket.Conn]bool, 1)
 	go s.reportWebSocketCount()
+	// go s.lengthCheck()
 	return &s
 }
 
@@ -51,7 +52,7 @@ func (s *Service) HandleWebsocket(ctx echo.Context) error {
 
 	s.clientMux.Lock()
 	s.wsClients[c] = true
-	// go s.handleClose(c)
+	go s.handleClose(c)
 	s.clientMux.Unlock()
 
 	return nil
@@ -81,6 +82,8 @@ func (s *Service) ForwardEvent(e events.Event) {
 
 func (s *Service) handleClose(c *websocket.Conn) {
 	defer func() {
+		delete(s.wsClients, c)
+		c.WriteMessage(websocket.CloseMessage, []byte{})
 		c.Close()
 	}()
 	c.SetReadLimit(maxMessageSize)
@@ -91,9 +94,6 @@ func (s *Service) handleClose(c *websocket.Conn) {
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseGoingAway) {
 				log.L.Infof("error: %v", err)
-				delete(s.wsClients, c)
-				c.WriteMessage(websocket.CloseMessage, []byte{})
-				c.Close()
 			}
 			break
 		}
@@ -124,5 +124,12 @@ func (s *Service) reportWebSocketCount() {
 			messenger.SendEvent(countEvent)
 		}
 		time.Sleep(1 * time.Minute)
+	}
+}
+
+func (s *Service) lengthCheck() {
+	for {
+		log.L.Infof("Length of the thing: %d", len(s.wsClients))
+		time.Sleep(20 * time.Second)
 	}
 }
