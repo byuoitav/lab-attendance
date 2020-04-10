@@ -19,6 +19,7 @@ const (
 	writeWait      = 10 * time.Second
 	pongWait       = 60 * time.Second
 	maxMessageSize = 512
+	pingPeriod     = 30 * time.Second
 )
 
 var upgrader = websocket.Upgrader{}
@@ -36,7 +37,6 @@ func New() *Service {
 
 	s.wsClients = make(map[*websocket.Conn]bool, 1)
 	go s.reportWebSocketCount()
-	// go s.lengthCheck()
 	return &s
 }
 
@@ -45,7 +45,6 @@ func New() *Service {
 func (s *Service) HandleWebsocket(ctx echo.Context) error {
 
 	c, err := upgrader.Upgrade(ctx.Response().Writer, ctx.Request(), nil)
-	// c.SetPingHandler(func(string) error { c.SetReadDeadline(time.Now().Add(60 * time.Second)); return nil })
 	if err != nil {
 		log.L.Errorf("Error while attempting to upgrade connection to websocket: %v", err)
 	}
@@ -53,6 +52,7 @@ func (s *Service) HandleWebsocket(ctx echo.Context) error {
 	s.clientMux.Lock()
 	s.wsClients[c] = true
 	go s.handleClose(c)
+	go s.pingWebSocket(c)
 	s.clientMux.Unlock()
 
 	return nil
@@ -80,6 +80,23 @@ func (s *Service) ForwardEvent(e events.Event) {
 
 }
 
+// pingWebSocket pings the websocket every 30 seconds so that handleClose doesn't kill the connection
+// and open a new websocket when the read times out
+func (s *Service) pingWebSocket(c *websocket.Conn) {
+	ping := time.NewTicker(pingPeriod)
+	defer ping.Stop()
+	for {
+		select {
+		case <-ping.C:
+			_ = c.SetWriteDeadline(time.Now().Add(writeWait))
+			if err := c.WriteMessage(websocket.PingMessage, []byte{}); err != nil {
+				break
+			}
+		}
+	}
+}
+
+// handleClose reads on the websocket until either it gets something or times out from the read deadline
 func (s *Service) handleClose(c *websocket.Conn) {
 	defer func() {
 		delete(s.wsClients, c)
@@ -101,6 +118,7 @@ func (s *Service) handleClose(c *websocket.Conn) {
 	}
 }
 
+// reportWebSocketCount sends an event with the number of open websockets
 func (s *Service) reportWebSocketCount() {
 	id := localsystem.MustSystemID()
 	deviceInfo := events.GenerateBasicDeviceInfo(id)
@@ -124,12 +142,5 @@ func (s *Service) reportWebSocketCount() {
 			messenger.SendEvent(countEvent)
 		}
 		time.Sleep(1 * time.Minute)
-	}
-}
-
-func (s *Service) lengthCheck() {
-	for {
-		log.L.Infof("Length of the thing: %d", len(s.wsClients))
-		time.Sleep(20 * time.Second)
 	}
 }
