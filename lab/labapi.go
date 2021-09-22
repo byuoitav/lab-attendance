@@ -14,7 +14,7 @@ import (
 	"github.com/byuoitav/wso2services/wso2requests"
 )
 
-const labAPIURL = "http://saasta.byu.edu/noauth/ea/eaLabTrack.php"
+const labAPIURL = "https://commtech.byu.edu/noauth/ea/eaLabTrack.php"
 
 type labRequest struct {
 	LabID      string    `json:"lab_id"`
