@@ -65,7 +65,7 @@ func (l Lab) LogAttendanceForCard(cardID string) error {
 		log.L.Debugf("Cache miss for Card ID %s\n", cardID)
 		// Call Persons v3 to validate the BYUID and get the name of the user
 		q := personsQueryResponse{}
-		err2, res, _ := wso2requests.MakeWSO2RequestReturnResponse("GET", fmt.Sprintf("https://api.byu.edu:443/byuapi/persons/v3/?credentials.credential_type=SEOS_CARD&credentials.credential_id=%s", cardID), nil, &q)
+		err2, res, _ := wso2requests.MakeWSO2RequestReturnResponse("GET", fmt.Sprintf("https://api.byu.edu:443/byuapi/persons/v4/?credentials.credential_type=SEOS_CARD&credentials.credential_id=%s", cardID), nil, &q)
 		if err2 != nil {
 
 			if err2.Type == "request-error" && res.StatusCode == http.StatusNotFound {
@@ -127,7 +127,7 @@ func (l Lab) LogAttendanceForBYUID(byuID string) error {
 		r := personsResponse{}
 
 		// Call Persons v3 to validate the BYUID and get the name of the user
-		err2, res, _ := wso2requests.MakeWSO2RequestReturnResponse("GET", fmt.Sprintf("https://api.byu.edu/byuapi/persons/v3/%s", byuID), nil, &r)
+		err2, res, _ := wso2requests.MakeWSO2RequestReturnResponse("GET", fmt.Sprintf("https://api.byu.edu/byuapi/persons/v4/%s", byuID), nil, &r)
 		if err2 != nil {
 
 			if err2.Type == "request-error" && res.StatusCode == http.StatusNotFound {
