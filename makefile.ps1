@@ -3,7 +3,8 @@ $COMMAND = $args[0]
 $NAME = "lab-attendance"
 $OWNER = "byuoitav"
 $PKG = "github.com/$OWNER/$NAME"
-$DOCKER_URL = "docker.pkg.github.com"
+$DOCKER_URL = "ghcr.io" 
+# "docker.pkg.github.com"
 $DOCKER_PKG = "$DOCKER_URL/$OWNER/$NAME"
 
 Write-Output "PKG: $PKG"
@@ -132,22 +133,25 @@ function Cleanup {
 }
 
 function DockerFunc {   #can not just be docker because it creates an infinite loop
-    Write-Output "Function Docker      Commit Hash: $COMMIT_HASH     Tag: $TAG"
+    $location = Get-Location
+    Write-Output "Current location is: $location"
+    Write-Output "Function Docker      Commit Hash: $COMMIT_HASH     Tag: $TAG  Name: $NAME"
     if ($COMMIT_HASH -eq $TAG) {
         Write-Output "Building dev containers with tag $COMMIT_HASH"
 
         Write-Output "Building container $DOCKER_PKG/$NAME-dev:$COMMIT_HASH"
-        Invoke-Expression "docker build -f dockerfile-arm --platform linux/arm/v7 --build-arg NAME=$NAME -t $DOCKER_PKG/$NAME-dev:$COMMIT_HASH dist"
+        Invoke-Expression "docker build --no-cache -f dockerfile-arm --platform linux/arm/v7 --build-arg NAME=$NAME -t $DOCKER_PKG/$NAME-dev:$COMMIT_HASH dist"
     } elseif ($TAG -match $DEV_TAG_REGEX) {
         Write-Output "Building dev containers with tag $TAG"
 
     	Write-Output "Building container $DOCKER_PKG/$NAME-dev:$TAG"
-    	Invoke-Expression "docker build -f dockerfile-arm --platform linux/arm/v7 --build-arg NAME=$NAME -t $DOCKER_PKG/$NAME-dev:$TAG dist"
+    	Invoke-Expression "docker build --no-cache -f dockerfile-arm --platform linux/arm/v7 --build-arg NAME=$NAME -t $DOCKER_PKG/$NAME-dev:$TAG dist"
     } elseif ($TAG -match $PRD_TAG_REGEX) {
         Write-Output "Building prd containers with tag $TAG"
 
+        Write-Output "Current location is: $location"
     	Write-Output "Building container $DOCKER_PKG/${NAME}:$TAG"
-    	Invoke-Expression "docker build -f dockerfile-arm --platform linux/arm/v7 --build-arg NAME=$NAME -t $DOCKER_PKG/${NAME}:$TAG dist"
+    	Invoke-Expression "docker build --no-cache -f dockerfile-arm --platform linux/arm/v7 --build-arg NAME=$NAME -t $DOCKER_PKG/${NAME}:$TAG dist"
     } else {
         Write-Output "Docker function quit unexpectedly. Commit Hash: $COMMIT_HASH     Tag: $TAG"
     }

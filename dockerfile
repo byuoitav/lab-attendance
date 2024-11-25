@@ -3,16 +3,18 @@
 
 FROM alpine:3.18
 
+# RUN apt update
 RUN apk update && apk add bash && apk --no-cache add tzdata
 
 ARG NAME
 ENV name=${NAME}
 
 #copy binaries
-COPY ${name}-bin ${name}-bin 
-COPY version.txt version.txt
+COPY ${name} ${name}
+COPY version.txt /version.txt
 
 # copy frontend
 COPY autoclave-dist autoclave-dist
 
-ENTRYPOINT [./${name}-bin]
+# ENTRYPOINT ["/bin/sh", "-c", "${name}-arm"]
+ENTRYPOINT ["/lab-attendance"]

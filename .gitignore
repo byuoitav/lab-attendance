@@ -13,6 +13,7 @@
 
 # Binary
 lab-attendance*
+dist*
 
 # Angular dist
 *-dist
