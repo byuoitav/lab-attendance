@@ -1,6 +1,16 @@
 document.addEventListener('DOMContentLoaded', async () => {
     currentComponent = 'keypad';
     loadComponent(currentComponent);
+
+    // make the services available globally
+    window.apiService = await new APIService();
+    window.eventService = new EventService();
+
+    // Fetch lab name from config endpoint and set it
+    const labName = await window.apiService.getLabName();
+    if (labName) {
+        document.querySelector('.lab-name').textContent = labName;
+    }
 });
 
 async function loadComponent(name) {

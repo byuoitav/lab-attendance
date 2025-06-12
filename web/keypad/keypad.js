@@ -29,7 +29,11 @@ window.components.keypad = {
             if (btn) btn.addEventListener('click', () => this.appendIdEntry(key.value));
         });
         if (this.backspaceBtn) this.backspaceBtn.addEventListener('click', () => this.backspaceIdEntry());
-        if (this.enterBtn) this.enterBtn.addEventListener('click', () => this.clearIdEntry());
+        if (this.enterBtn) this.enterBtn.addEventListener('click', () => {
+            const byuId = this.idEntry.textContent.replace(/-/g, ''); // Remove hyphens
+            window.apiService.login(byuId);
+            this.clearIdEntry()
+        });
         this.updateButtonStates();
     },
 
