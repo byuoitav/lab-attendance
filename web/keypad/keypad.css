@@ -23,6 +23,7 @@ button:active {
     color: #808080; 
     cursor: not-allowed;
     box-shadow: none;
-    pointer-events: none; /* Prevents any interaction */
+    pointer-events: none; 
 }
+
 
