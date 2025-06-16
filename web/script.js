@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.apiService = await new APIService();
     window.eventService = new EventService();
 
-    // Fetch lab name from config endpoint and set it
+    ee// Fetch lab name from config endpoint and set it
     const labName = await window.apiService.getLabName();
     if (labName) {
         document.querySelector('.lab-name').textContent = labName;
@@ -139,6 +139,10 @@ window.showScreensaver = function() {
     // Remove any existing screensaver first
     window.hideScreensaver();
 
+    // reset id-entry
+    window.components.keypad.clearIdEntry();
+
+
     const screensaver = document.createElement('div');
     screensaver.id = 'screensaver';
     screensaver.className = 'screensaver';
@@ -172,12 +176,5 @@ window.hideScreensaver = function() {
     if (window.screensaverTimeInterval) {
         clearInterval(window.screensaverTimeInterval);
         window.screensaverTimeInterval = null;
-    }
-};
-
-window.hideScreensaver = function() {
-    const screensaver = document.getElementById('screensaver');
-    if (screensaver) {
-        screensaver.remove();
     }
 };
