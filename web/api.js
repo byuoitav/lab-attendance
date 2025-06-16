@@ -2,9 +2,7 @@ class APIService {
   constructor() {}
 
   login(byuID) {
-    const endpoint = `http://localhost:8243/api/v1/login/${byuID}`;
-
-    console.log("Hitting endpoint: " + endpoint);
+    const endpoint = "http://" + window.location.host + "/api/v1/login/" + byuID;
 
     fetch(endpoint, {
       method: "POST"
@@ -21,7 +19,7 @@ class APIService {
   }
 
   getLabName() {
-    const endpoint = "http://localhost:8243/api/v1/config";
+    const endpoint = "http://" + window.location.host + "/api/v1/config";
 
     return fetch(endpoint)
       .then(response => {
@@ -48,7 +46,7 @@ class EventService {
   }
 
   openWebsocket() {
-    const endpoint = "ws://localhost:8244/ws";
+    const endpoint = "ws://" + window.location.host + "/websocket";
     let ws = new WebSocket(endpoint);
 
     ws.onopen = () => {
@@ -65,8 +63,6 @@ class EventService {
       } catch (e) {
         data = null;
       }
-      console.log("data.key:", data?.key);
-      // Check for login event using the new structure
       window.showPopup && window.showPopup(data);
       
       const customEvent = new CustomEvent("message", { detail: event });
