@@ -13,11 +13,7 @@ class APIService {
         if (!response.ok) {
           throw new Error("Network response was not ok: " + response.statusText);
         }
-
         return;
-      })
-      .then(data => {
-        console.log(data);
       })
       .catch(error => {
         console.log("Error:", error);
@@ -52,7 +48,7 @@ class EventService {
   }
 
   openWebsocket() {
-    const endpoint = "ws://localhost:8243/websocket";
+    const endpoint = "ws://localhost:8244/ws";
     let ws = new WebSocket(endpoint);
 
     ws.onopen = () => {
@@ -60,9 +56,19 @@ class EventService {
       clearInterval(this.retryTimer);
       this.retryTimer = null;
     };
-
+    
     ws.onmessage = (event) => {
       console.log("Emitting event:", event);
+      let data;
+      try {
+        data = JSON.parse(event.data);
+      } catch (e) {
+        data = null;
+      }
+      console.log("data.key:", data?.key);
+      // Check for login event using the new structure
+      window.showPopup && window.showPopup(data);
+      
       const customEvent = new CustomEvent("message", { detail: event });
       this.listener.dispatchEvent(customEvent);
     };
@@ -82,9 +88,3 @@ class EventService {
     return this.listener;
   }
 }
-
-// Example usage:
-// const events = new EventService();
-// events.getEventListener().addEventListener("message", (event) => {
-//   console.log("Received data:", event.detail.data);
-// });

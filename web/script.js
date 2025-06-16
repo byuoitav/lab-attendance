@@ -71,3 +71,49 @@ async function loadComponent(name) {
 
     document.body.appendChild(script);
 }
+
+// Show a popup for welcome or error messages
+window.showPopup = function(data) {
+    console.log('showPopup called with data:', data);
+    console.log('data.key:', data?.key);
+    // Remove any existing popup
+    const oldPopup = document.getElementById('popup');
+    if (oldPopup) oldPopup.remove();
+
+    const popup = document.createElement('div');
+    popup.id = 'popup';
+    popup.className = 'popup';
+
+    let messages = [];
+    switch (data.key) {
+        case 'login':
+            messages = [
+                `Welcome, ${data.data.FirstName}!`,
+                `Successfully logged in ${data.data.Name}`
+            ];
+            break;
+        case 'login-error':
+            messages = [
+                'Login failed:',
+                data.data
+            ];
+            break;
+        case 'card-read-error':
+            messages = [
+                'Unable to read card, please try your ID Card again.'
+            ];
+            break;
+        default:
+            messages = ['Test'];
+    }
+    messages.forEach(msg => {
+        const p = document.createElement('p');
+        p.textContent = msg;
+        popup.appendChild(p);
+    });
+
+    document.body.appendChild(popup);
+    setTimeout(() => {
+        popup.remove();
+    }, 3500);
+};
