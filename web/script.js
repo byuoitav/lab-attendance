@@ -11,6 +11,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (labName) {
         document.querySelector('.lab-name').textContent = labName;
     }
+
+    // after 30 seconds of inactivity, show the screensaver
+    let inactivityTimeout;
+    function resetInactivityTimeout() {
+        window.hideScreensaver();
+        clearTimeout(inactivityTimeout);
+        inactivityTimeout = setTimeout(() => {
+            window.showScreensaver();
+        }, 30000); // 30 seconds
+    }
+
+    // Reset inactivity timeout on user interaction
+    document.addEventListener('mousemove', resetInactivityTimeout);
+    document.addEventListener('keydown', resetInactivityTimeout);
+    resetInactivityTimeout(); // Initialize the timeout
+
+    
 });
 
 async function loadComponent(name) {
@@ -74,8 +91,8 @@ async function loadComponent(name) {
 
 // Show a popup for welcome or error messages
 window.showPopup = function(data) {
-    console.log('showPopup called with data:', data);
-    console.log('data.key:', data?.key);
+    // Remove screensaver if it's showing
+    window.hideScreensaver();
     // Remove any existing popup
     const oldPopup = document.getElementById('popup');
     if (oldPopup) oldPopup.remove();
@@ -116,4 +133,51 @@ window.showPopup = function(data) {
     setTimeout(() => {
         popup.remove();
     }, 3500);
+};
+
+window.showScreensaver = function() {
+    // Remove any existing screensaver first
+    window.hideScreensaver();
+
+    const screensaver = document.createElement('div');
+    screensaver.id = 'screensaver';
+    screensaver.className = 'screensaver';
+
+    const time = document.createElement('h1');
+    time.id = 'screensaver-time';
+    time.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    screensaver.appendChild(time);
+
+    const message = document.createElement('p');
+    message.textContent = 'Sign or Tap into the Lab.';
+    screensaver.appendChild(message);
+
+    document.body.appendChild(screensaver);
+
+    // Start interval to update time every second
+    window.screensaverTimeInterval = setInterval(() => {
+        const timeElem = document.getElementById('screensaver-time');
+        if (timeElem) {
+            timeElem.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+    }, 1000);
+};
+
+// Clear the interval when hiding the screensaver
+window.hideScreensaver = function() {
+    const screensaver = document.getElementById('screensaver');
+    if (screensaver) {
+        screensaver.remove();
+    }
+    if (window.screensaverTimeInterval) {
+        clearInterval(window.screensaverTimeInterval);
+        window.screensaverTimeInterval = null;
+    }
+};
+
+window.hideScreensaver = function() {
+    const screensaver = document.getElementById('screensaver');
+    if (screensaver) {
+        screensaver.remove();
+    }
 };
