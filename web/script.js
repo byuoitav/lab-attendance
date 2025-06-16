@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.apiService = await new APIService();
     window.eventService = new EventService();
 
-    ee// Fetch lab name from config endpoint and set it
+    // Fetch lab name from config endpoint and set it
     const labName = await window.apiService.getLabName();
     if (labName) {
         document.querySelector('.lab-name').textContent = labName;
