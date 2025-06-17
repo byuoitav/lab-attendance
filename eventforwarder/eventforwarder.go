@@ -11,8 +11,8 @@ import (
 	"github.com/byuoitav/common/log"
 	"github.com/byuoitav/common/v2/events"
 	"github.com/byuoitav/device-monitoring/localsystem"
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/labstack/echo"
 )
 
 const (
@@ -41,12 +41,12 @@ func New() *Service {
 }
 
 // HandleWebsocket upgrades the connection to a websocket connection and then sends
-// messages to the client as they are recieved
-func (s *Service) HandleWebsocket(ctx echo.Context) error {
-
-	c, err := upgrader.Upgrade(ctx.Response().Writer, ctx.Request(), nil)
+// messages to the client as they are received
+func (s *Service) HandleWebsocket(ctx *gin.Context) {
+	c, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
 		log.L.Errorf("Error while attempting to upgrade connection to websocket: %v", err)
+		return
 	}
 
 	s.clientMux.Lock()
@@ -54,14 +54,12 @@ func (s *Service) HandleWebsocket(ctx echo.Context) error {
 	go s.handleClose(c)
 	go s.pingWebSocket(c)
 	s.clientMux.Unlock()
-
-	return nil
 }
 
 // ForwardEvent forwards the given event to all of the currently registered websocket clients
 func (s *Service) ForwardEvent(e events.Event) {
 
-	if e.Key == "login" || e.Key == "card-read-error" {
+	if e.Key == "login" || e.Key == "card-read-error" || e.Key == "login-error" {
 
 		s.clientMux.Lock()
 		for c := range s.wsClients {

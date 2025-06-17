@@ -4,13 +4,13 @@ import (
 	"github.com/byuoitav/common/v2/events"
 	"github.com/byuoitav/lab-attendance/lab"
 	"github.com/byuoitav/lab-attendance/messenger"
-	"github.com/labstack/echo"
+	"github.com/gin-gonic/gin"
 )
 
 // Login will check the given BYUID for validity and then call the Lab-Attendance API to log the user's attendance
-func Login(m *messenger.Messenger, i events.BasicDeviceInfo, lab lab.Lab) func(echo.Context) error {
+func Login(m *messenger.Messenger, i events.BasicDeviceInfo, lab lab.Lab) func(*gin.Context) {
 
-	return func(ctx echo.Context) error {
+	return func(ctx *gin.Context) {
 
 		byuID := ctx.Param("byuID")
 
@@ -20,6 +20,6 @@ func Login(m *messenger.Messenger, i events.BasicDeviceInfo, lab lab.Lab) func(e
 		// 500 - Any non-cacheable error such as failure to marshal?
 		lab.LogAttendanceForBYUID(byuID)
 
-		return nil
+		ctx.Status(200)
 	}
 }
