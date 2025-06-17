@@ -59,7 +59,7 @@ func (s *Service) HandleWebsocket(ctx *gin.Context) {
 // ForwardEvent forwards the given event to all of the currently registered websocket clients
 func (s *Service) ForwardEvent(e events.Event) {
 
-	if e.Key == "login" || e.Key == "card-read-error" {
+	if e.Key == "login" || e.Key == "card-read-error" || e.Key == "login-error" {
 
 		s.clientMux.Lock()
 		for c := range s.wsClients {
